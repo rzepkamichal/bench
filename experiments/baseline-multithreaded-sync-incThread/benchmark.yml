@@ -1,0 +1,102 @@
+config:
+  name: "test"
+  repetitions: 3
+  client:
+    count: 1
+
+tasks:
+  warmup:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 4
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 0
+    payload_size: 128
+
+  t1:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 4
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 1
+    payload_size: 128
+
+  t2:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 8
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 2
+    payload_size: 128
+
+  t3:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 16
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 3
+    payload_size: 128
+
+  t4:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 32
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 4
+    payload_size: 128
+
+  t5:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 64
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 5
+    payload_size: 128
+
+  t6:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 128
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 6
+    payload_size: 128
+
+  t7:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 256
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 7
+    payload_size: 128

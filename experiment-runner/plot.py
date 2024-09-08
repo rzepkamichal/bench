@@ -17,7 +17,7 @@ class Task(BaseModel):
     throughput: int
     mode: str
     num_threads: int
-    num_requests: int
+    runtime: str
     payload_size: int
     task_id: int
 
@@ -58,7 +58,7 @@ def get_task_parameters():
         'mode',
         'throughput',
         'num_threads',
-        'num_requests',
+        'runtime',
         'payload_size'
     ]
 

@@ -1,10 +1,12 @@
 import atexit
+import builtins
 import datetime
 import os
 import signal
 import subprocess
 import sys
 from time import sleep
+import time
 from typing import Dict, List
 
 from pydantic import BaseModel
@@ -91,7 +93,7 @@ def stop_docker_containers(compose_file_path: str):
     :param compose_file_path: Path to the docker-compose.yaml file.
     """
     return subprocess.run(
-        ["docker", "compose", "-f", compose_file_path, "down"], check=True
+        ["docker", "compose","-f", compose_file_path, "down"], check=True
     )
 
 
@@ -127,15 +129,13 @@ def run_benchmark(name):
             start_docker_containers("docker-compose.yml")
         except Exception as e:
             print(Fore.RED + "Couldn't start containers")
-            print(e)
-            kill_handler()
+            raise(e)
         
         try:
             scripts = get_python_scripts()
             print(Fore.GREEN + f"found the folowing scripts:\n {scripts}")
-            start_python_scripts(scripts)
         except Exception as e:
-            print(Fore.RED + "Couldn't start python Scripts")
+            print(Fore.RED + "error in finding python Scripts")
             print(e)
             kill_handler()
 
@@ -143,51 +143,41 @@ def run_benchmark(name):
         for task_name,task in benchmark.tasks.items():
             for _ in range(0, 5):
                 print("Running task")
+                script_processes = []
                 try:
-                    subprocess.run(task.command + task.build_args(rep,time,task_name,name), check=True)
-                    break
+                    cli_process = subprocess.Popen(task.command + task.build_args(rep,time,task_name,name,))
+                    for script in scripts:
+                        script_process = subprocess.Popen(['python3', script])
+                        script_processes.append(script_process)
+                    cli_process.wait()
+                    if(cli_process.returncode == 0):
+                        break
                 except Exception as e:
                     print(Fore.RED + "Couldn't start benchmark")
                     print(e)
-                    print(Fore.GREEN + "Retrying")
+                finally:
+                    for script_process in script_processes:
+                            script_process.kill()
                     sleep(10)
+                    print(Fore.GREEN + "Retrying")       
 
         try:
             stop_docker_containers("docker-compose.yml")
         except Exception as e:
             print(Fore.RED + "Couldn't stop containers")
             print(e)
-            kill_handler()
-        try:
-            stop_python_scripts()
-        except Exception as e:
-            print(Fore.RED + "Couldn't python scripts")
-            print(e)
+        finally:
             kill_handler()
 
 def get_python_scripts():
     """Gets a list of Python scripts in the current working directory."""
     return [file for file in os.listdir('.') if file.endswith('.py')]
 
-processes = []
-def start_python_scripts(scripts):
-    """Starts all Python scripts in a list."""
-    for script in scripts:
-        global processes
-        process = subprocess.Popen(['python3', script])
-        processes.append(process)
-
-def stop_python_scripts():
-    """Stops all running Python scripts."""
-    global processes
-    for process in processes:
-        process.kill()
 
 def kill_handler(*args):
     print("\nCleaning up")
     try:
         stop_docker_containers("docker-compose.yml")
-        stop_python_scripts()
         sys.exit(1)
     except Exception as e:
         print(Fore.RED + Style.BRIGHT + "Cleaning up FAILED !!!")
@@ -209,7 +199,15 @@ if __name__ == "__main__":
     for directory in directories:
         os.chdir(directory)
         folder_name = os.path.basename(directory)
+        timeout = 60
+        while True:
+            try:
+                run_benchmark(folder_name)
+                break
+            except Exception as e:
+                print(Fore.CYAN + f"Retrying in {timeout / 60} min")
+                sleep(timeout)
+                timeout += 60
 
-        run_benchmark(folder_name)
 
         os.chdir(working_directory)

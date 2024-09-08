@@ -13,7 +13,7 @@ tasks:
     throughput: 4
     mode: sync
     num_threads: 4
-    runtime: PT5S
+    runtime: PT30S
     task_id: 0
     payload_size: 128
 
@@ -25,7 +25,7 @@ tasks:
     throughput: 4
     mode: sync
     num_threads: 4
-    runtime: PT5S
+    runtime: PT30S
     task_id: 1
     payload_size: 128
 
@@ -37,7 +37,7 @@ tasks:
     throughput: 8
     mode: sync
     num_threads: 4
-    runtime: PT5S
+    runtime: PT30S
     task_id: 2
     payload_size: 128
 
@@ -49,7 +49,7 @@ tasks:
     throughput: 16
     mode: sync
     num_threads: 4
-    runtime: PT5S
+    runtime: PT30S
     task_id: 3
     payload_size: 128
 
@@ -61,7 +61,7 @@ tasks:
     throughput: 32
     mode: sync
     num_threads: 4
-    runtime: PT5S
+    runtime: PT30S
     task_id: 4
     payload_size: 128
 
@@ -73,7 +73,7 @@ tasks:
     throughput: 64
     mode: sync
     num_threads: 4
-    runtime: PT5S
+    runtime: PT30S
     task_id: 5
     payload_size: 128
 
@@ -85,7 +85,7 @@ tasks:
     throughput: 128
     mode: sync
     num_threads: 4
-    runtime: PT5S
+    runtime: PT30S
     task_id: 6
     payload_size: 128
 
@@ -97,6 +97,6 @@ tasks:
     throughput: 256
     mode: sync
     num_threads: 4
-    runtime: PT5S
+    runtime: PT30S
     task_id: 7
     payload_size: 128

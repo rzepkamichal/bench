@@ -8,7 +8,7 @@ services:
       - 2181:2181/tcp
 
   bookie1:
-    image: apache/bookkeeper:latest
+    image: leonmw/bookkeeper-wiht-tc
     restart: always
     networks:
       - bookkeeper-internal
@@ -22,7 +22,7 @@ services:
       BK_zkServers: zookeeper:2181
 
   bookie2:
-    image: apache/bookkeeper:latest
+    image: leonmw/bookkeeper-wiht-tc
     restart: always
     networks:
       - bookkeeper-internal
@@ -36,7 +36,7 @@ services:
       BK_zkServers: zookeeper:2181
 
   bookie3:
-    image: apache/bookkeeper:latest
+    image: leonmw/bookkeeper-wiht-tc
     restart: always
     networks:
       - bookkeeper-internal
