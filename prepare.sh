@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#git pull
+git pull
 
 working_dir="$(pwd)"
 source_path="$1"
@@ -28,7 +28,7 @@ if [ -d "$working_dir/experiments/archived" ]; then
 fi
 
 if [ -d "$working_dir/experiment-runner/env" ]; then
-    rm -rf "$working_dir/experiments/env"
+    rm -rf "$working_dir/experiment-runner/env"
 fi
 
 git add *
