@@ -1,0 +1,215 @@
+import atexit
+import datetime
+import os
+import signal
+import subprocess
+import sys
+from time import sleep
+from typing import Dict, List
+
+from pydantic import BaseModel
+import yaml
+
+from colorama import Fore, Style, init
+
+init(autoreset=True)  # Ensure automatic color reset
+
+BENCHMARK = "benchmark.yml"
+
+
+class Client(BaseModel):
+    count: int
+
+
+class Config(BaseModel):
+    name: str
+    repetitions: int
+    client: Client
+
+
+class Task(BaseModel):
+    """
+    Configuration for the workload generator.
+    """
+
+    command: List[str]
+    throughput: int
+    mode: str
+    num_threads: int
+    runtime: str
+    payload_size: int
+    task_id: int
+
+    def build_args(self,repetition:int,time:datetime,task_name:str,name="benchmark") -> List[str]:
+        """
+        takes in the configuration and name and builds the cli args.
+        """
+        new_output_name = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{name}'
+
+        args = []
+        args.append("-t")
+        args.append(str(self.num_threads))
+        args.append("-r")
+        args.append(str(self.runtime))
+        args.append("-p")
+        args.append(str(self.payload_size))
+        args.append("-l")
+        args.append(str(self.throughput))
+        args.append("-m")
+        args.append(self.mode)
+        args.append("-tid") 
+        args.append(str(self.task_id))
+        args.append("-o")
+        args.append(new_output_name)
+        return args
+
+
+class Benchmark(BaseModel):
+    """
+    Configuration for a single benchmark scenario.
+    """
+
+    config: Config
+    tasks: Dict[str,Task]
+
+
+def start_docker_containers(compose_file_path: str):
+    """
+    Start multiple containers using docker-compose.
+
+    :param compose_file_path: Path to the docker-compose.yaml file.
+    """
+    return subprocess.run(
+        ["docker", "compose", "-f", compose_file_path, "up", "-d"], check=True
+    )
+
+
+def stop_docker_containers(compose_file_path: str):
+    """
+    Stop multiple containers using docker-compose.
+
+    :param compose_file_path: Path to the docker-compose.yaml file.
+    """
+    return subprocess.run(
+        ["docker", "compose", "-f", compose_file_path, "down"], check=True
+    )
+
+
+def parse_benchmark_config() -> Benchmark:
+    """
+    Reads a YAML file and validates it against the Benchmark schema.
+
+    :param config_file_path: Path to the directory containing the YAML configuration file.
+    :return: Benchmark object if validation is successful.
+    """
+
+    with open(BENCHMARK, "r") as file:
+        config_data = yaml.safe_load(file)
+
+    # Validate the data against the Benchmark schema
+    config = Benchmark(**config_data)
+
+    print(Fore.GREEN + "Config successfully read and validated.")
+    return config
+
+
+def run_benchmark(name):
+    try:
+        benchmark = parse_benchmark_config()
+    except Exception as e:
+        print(Fore.RED + "Couldn't parse config")
+        print(e)
+        kill_handler()
+    
+    time = datetime.datetime.now()
+    for rep in range(benchmark.config.repetitions):
+        try:
+            start_docker_containers("docker-compose.yml")
+        except Exception as e:
+            print(Fore.RED + "Couldn't start containers")
+            print(e)
+            kill_handler()
+        
+        try:
+            scripts = get_python_scripts()
+            print(Fore.GREEN + f"found the folowing scripts:\n {scripts}")
+            start_python_scripts(scripts)
+        except Exception as e:
+            print(Fore.RED + "Couldn't start python Scripts")
+            print(e)
+            kill_handler()
+
+        sleep(10)
+        for task_name,task in benchmark.tasks.items():
+            for _ in range(0, 5):
+                print("Running task")
+                try:
+                    subprocess.run(task.command + task.build_args(rep,time,task_name,name), check=True)
+                    break
+                except Exception as e:
+                    print(Fore.RED + "Couldn't start benchmark")
+                    print(e)
+                    print(Fore.GREEN + "Retrying")
+                    sleep(10)
+
+        try:
+            stop_docker_containers("docker-compose.yml")
+        except Exception as e:
+            print(Fore.RED + "Couldn't stop containers")
+            print(e)
+            kill_handler()
+        try:
+            stop_python_scripts()
+        except Exception as e:
+            print(Fore.RED + "Couldn't python scripts")
+            print(e)
+            kill_handler()
+
+def get_python_scripts():
+    """Gets a list of Python scripts in the current working directory."""
+    return [file for file in os.listdir('.') if file.endswith('.py')]
+
+processes = []
+def start_python_scripts(scripts):
+    """Starts all Python scripts in a list."""
+    for script in scripts:
+        global processes
+        process = subprocess.Popen(['python3', script])
+        processes.append(process)
+
+def stop_python_scripts():
+    """Stops all running Python scripts."""
+    global processes
+    for process in processes:
+        process.kill()
+
+def kill_handler(*args):
+    print("\nCleaning up")
+    try:
+        stop_docker_containers("docker-compose.yml")
+        stop_python_scripts()
+        sys.exit(1)
+    except Exception as e:
+        print(Fore.RED + Style.BRIGHT + "Cleaning up FAILED !!!")
+    finally:
+        sys.exit(1)
+
+signal.signal(signal.SIGINT, kill_handler)
+signal.signal(signal.SIGTERM, kill_handler)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python3 main.py <experiment_directory> <experiment_directory> ...")
+        kill_handler()
+
+    working_directory = os.getcwd()
+    directories = sys.argv[1:]
+    print(directories)
+    for directory in directories:
+        os.chdir(directory)
+        folder_name = os.path.basename(directory)
+
+        run_benchmark(folder_name)
+
+        os.chdir(working_directory)

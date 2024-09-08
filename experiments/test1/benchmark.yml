@@ -1,0 +1,30 @@
+config:
+  name: "test"
+  repetitions: 5
+  client:
+    count: 1
+  
+  
+tasks:
+  t1:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 1
+    interval: 8
+    num_threads: 1
+    runtime: PT30S
+    payload_size: 512
+
+  t2:
+    command:
+      - java
+      - -jar
+      - ../../workload-generator/target/bookkeeper-workload-generator-1.0.jar
+    throughput: 1
+    interval: 8
+    num_threads: 1
+    runtime: PT30S
+    payload_size: 512
+
