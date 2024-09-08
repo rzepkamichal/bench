@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git pull
+#git pull
 
 working_dir="$(pwd)"
 source_path="$1"
