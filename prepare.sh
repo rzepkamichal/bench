@@ -14,7 +14,7 @@ cd "$source_path" || exit 1
 echo "Source Directory:" $(pwd)
 
 cd "$workload_src"
-#mvn clean && mvn package
+mvn clean && mvn package
 cp target/bookkeeper-workload-generator-1.0.jar "$working_dir"
 cd "$working_dir"
 mv bookkeeper-workload-generator-1.0.jar workload-generator.jar
