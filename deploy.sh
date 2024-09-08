@@ -17,7 +17,6 @@ cd "$workload_src"
 mvn clean && mvn package
 cp target/bookkeeper-workload-generator-1.0.jar "$working_dir"
 cd "$working_dir"
-mv bookkeeper-workload-generator-1.0.jar workload-generator.jar
 
 cp -r "$experiment_runner_src" "$working_dir/experiment-runner"
 
