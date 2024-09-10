@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-    echo "Usage: $0 <ip_list> <directory1> [<directory2> ...]"
+    echo "Usage: $0 <zk_ip_list> <experiment_dir1> [<experiment-dir2> ...]"
     exit 1
 fi
 
