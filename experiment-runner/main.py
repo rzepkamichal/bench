@@ -42,7 +42,8 @@ class Task(BaseModel):
     payload_size: int
     task_id: int
 
-    def build_args(self,repetition:int,time:datetime,task_name:str,name="benchmark") -> List[str]:
+    def build_args(self,time:datetime,zk:str,name:str) -> List[str]:
+
         """
         takes in the configuration and name and builds the cli args.
         """
@@ -63,6 +64,8 @@ class Task(BaseModel):
         args.append(str(self.task_id))
         args.append("-o")
         args.append(new_output_name)
+        args.append("-zk")
+        args.append(zk)
         return args
 
 
@@ -115,7 +118,7 @@ def parse_benchmark_config() -> Benchmark:
     return config
 
 
-def run_benchmark(name):
+def run_benchmark(folder_name:str,zk:str):
     try:
         benchmark = parse_benchmark_config()
     except Exception as e:
@@ -124,7 +127,7 @@ def run_benchmark(name):
         kill_handler()
     
     time = datetime.datetime.now()
-    for rep in range(benchmark.config.repetitions):
+    for _ in range(benchmark.config.repetitions):
         try:
             start_docker_containers("docker-compose.yml")
         except Exception as e:
@@ -140,15 +143,12 @@ def run_benchmark(name):
             kill_handler()
 
         sleep(10)
-        for task_name,task in benchmark.tasks.items():
+        for _,task in benchmark.tasks.items():
             for _ in range(0, 5):
                 print("Running task")
                 script_processes = []
                 try:
-                    cli_process = subprocess.Popen(task.command + task.build_args(rep,time,task_name,name,))
-                    for script in scripts:
-                        script_process = subprocess.Popen(['python3', script])
-                        script_processes.append(script_process)
+                    cli_process = subprocess.Popen(task.command + task.build_args(time=time,zk=zk,name=folder_name))
                     cli_process.wait()
                     if(cli_process.returncode == 0):
                         break
@@ -189,20 +189,23 @@ signal.signal(signal.SIGTERM, kill_handler)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python3 main.py <experiment_directory> <experiment_directory> ...")
+    if len(sys.argv) < 3:
+        print("Usage: python3 main.py <zk> <experiment_directory> <experiment_directory> ...")
         kill_handler()
 
     working_directory = os.getcwd()
-    directories = sys.argv[1:]
+    directories = sys.argv[2:]
     print(directories)
+
+    zk = sys.argv[1]
+
     for directory in directories:
         os.chdir(directory)
         folder_name = os.path.basename(directory)
         timeout = 60
         while True:
             try:
-                run_benchmark(folder_name)
+                run_benchmark(folder_name=folder_name,zk=zk)
                 break
             except Exception as e:
                 print(Fore.CYAN + f"Retrying in {timeout / 60} min")

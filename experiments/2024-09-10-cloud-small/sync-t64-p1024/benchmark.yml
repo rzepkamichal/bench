@@ -1,0 +1,91 @@
+config:
+  name: "sync-t64-p-1024"
+  repetitions: 1
+  client:
+    count: 1
+
+tasks:
+  warmup:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 400
+    mode: sync
+    num_threads: 64
+    runtime: PT30S
+    task_id: 0
+    payload_size: 1024
+
+  t1:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 400
+    mode: sync
+    num_threads: 64
+    runtime: PT1M
+    task_id: 1
+    payload_size: 1024
+
+  t2:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 800
+    mode: sync
+    num_threads: 64
+    runtime: PT1M
+    task_id: 2
+    payload_size: 1024
+
+  t3:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 1200
+    mode: sync
+    num_threads: 64
+    runtime: PT1M
+    task_id: 3
+    payload_size: 1024
+
+  t4:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 1300
+    mode: sync
+    num_threads: 64
+    runtime: PT1M
+    task_id: 4
+    payload_size: 1024
+
+  t5:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 580
+    mode: sync
+    num_threads: 1400
+    runtime: PT1M
+    task_id: 5
+    payload_size: 1024
+
+  t6:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 600
+    mode: sync
+    num_threads: 1500
+    runtime: PT1M
+    task_id: 6
+    payload_size: 1024
+
