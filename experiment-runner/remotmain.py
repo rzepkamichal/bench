@@ -1,3 +1,4 @@
+import argparse
 import atexit
 import builtins
 import datetime
@@ -149,28 +150,67 @@ signal.signal(signal.SIGTERM, kill_handler)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python3 main.py <zk> <experiment_directory> <experiment_directory> ...")
+    parser = argparse.ArgumentParser(description="Run benchmark script.")
+
+    parser.add_argument('-d', action='store_true', help="Optional '-d' flag, indicates that only one directory is allowed.")
+    parser.add_argument('zk', type=str, help="The zk string (required).")
+    parser.add_argument('directories', nargs='+', help="One or more experiment directories.")
+
+    args = parser.parse_args()
+    zk = args.zk
+
+    if args.d == "-d" and len(args.directories) > 1:
+        print("Error: When using the '-d' flag, only one directory is allowed.")
         kill_handler()
 
     working_directory = os.getcwd()
-    directories = sys.argv[2:]
-    print(directories)
 
-    zk = sys.argv[1]
-
-    for directory in directories:
-        os.chdir(directory)
-        folder_name = os.path.basename(directory)
-        timeout = 60
-        while True:
-            try:
-                run_benchmark(folder_name=folder_name,zk=zk)
-                break
-            except Exception as e:
-                print(Fore.CYAN + f"Retrying in {timeout / 60} min")
-                sleep(timeout)
-                timeout += 60
+    batch_dir  = args.directories[0]
 
 
-        os.chdir(working_directory)
+    if args.d is True:
+
+        if not os.path.exists(batch_dir):
+            print(f"Error: folder for experiment batch {batch_dir} dos not exist")
+            kill_handler()
+
+        os.chdir(batch_dir)
+        experiment_folders = os.listdir()
+
+
+        for experiment_folder in experiment_folders:
+            os.chdir(experiment_folder)
+            experiment_folder_name = os.path.basename(experiment_folder)
+
+            print(experiment_folder_name)
+            timeout = 1
+
+            while True:
+                try:
+                    run_benchmark(folder_name=experiment_folder_name, zk=zk)
+                    break
+                except Exception as e:
+                    print(Fore.CYAN + f"Retrying in {timeout / 60} min")
+                    sleep(timeout)
+                    timeout += 60
+            os.chdir(working_directory)
+
+    if args.d is False:
+        for experiment_dir in args.directories:
+            if not os.path.exists(experiment_dir):
+                print(f"Error: folder {experiment_dir} dos not exist")
+                kill_handler()
+            os.chdir(experiment_dir)
+            folder_name = os.path.basename(experiment_dir)
+            timeout = 60
+
+            while True:
+                try:
+                    run_benchmark(folder_name=folder_name, zk=zk)
+                    break
+                except Exception as e:
+                    print(Fore.CYAN + f"Retrying in {timeout / 60} min")
+                    sleep(timeout)
+                    timeout += 60
+
+            os.chdir(working_directory)

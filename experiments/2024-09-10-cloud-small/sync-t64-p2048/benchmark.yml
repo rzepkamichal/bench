@@ -70,9 +70,9 @@ tasks:
       - java
       - -jar
       - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
-    throughput: 580
+    throughput: 1400
     mode: sync
-    num_threads: 1400
+    num_threads: 64
     runtime: PT1M
     task_id: 5
     payload_size: 2048
@@ -82,9 +82,9 @@ tasks:
       - java
       - -jar
       - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
-    throughput: 600
+    throughput: 1500
     mode: sync
-    num_threads: 1500
+    num_threads: 64
     runtime: PT1M
     task_id: 6
     payload_size: 2048
