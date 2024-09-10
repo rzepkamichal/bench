@@ -1,3 +1,4 @@
+
 import atexit
 import builtins
 import datetime
@@ -42,9 +43,9 @@ class Task(BaseModel):
     payload_size: int
     task_id: int
 
-    def build_args(self,repetition:int,time:datetime,task_name:str,name="benchmark") -> List[str]:
+    def build_args(self, repetition: int, time: datetime, task_name: str, zk_address: str, name="benchmark") -> List[str]:
         """
-        takes in the configuration and name and builds the cli args.
+        takes in the configuration and name and builds the CLI args.
         """
         new_output_name = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{name}'
 
@@ -63,6 +64,9 @@ class Task(BaseModel):
         args.append(str(self.task_id))
         args.append("-o")
         args.append(new_output_name)
+        args.append("-zk")
+        args.append(zk_address)
+        
         return args
 
 
@@ -72,7 +76,8 @@ class Benchmark(BaseModel):
     """
 
     config: Config
-    tasks: Dict[str,Task]
+    tasks: Dict[str, Task]
+
 
 def parse_benchmark_config() -> Benchmark:
     """
@@ -92,79 +97,63 @@ def parse_benchmark_config() -> Benchmark:
     return config
 
 
-def run_benchmark(name):
+def run_benchmark(name, zk_address):
     try:
         benchmark = parse_benchmark_config()
     except Exception as e:
         print(Fore.RED + "Couldn't parse config")
         print(e)
         kill_handler()
-    
-    time = datetime.datetime.now()
-    for rep in range(benchmark.config.repetitions):        
-#        try:
-#            scripts = get_python_scripts()
-#            print(Fore.GREEN + f"found the folowing scripts:\n {scripts}")
-#        except Exception as e:
-#            print(Fore.RED + "error in finding python Scripts")
-#            print(e)
-#            kill_handler()
 
+    time = datetime.datetime.now()
+    for rep in range(benchmark.config.repetitions):
         sleep(10)
-        for task_name,task in benchmark.tasks.items():
+        for task_name, task in benchmark.tasks.items():
             for _ in range(0, 5):
                 print("Running task")
-#                script_processes = []
                 try:
-                    cli_process = subprocess.Popen(task.command + task.build_args(rep,time,task_name,name,))
-#                    for script in scripts:
-#                        script_process = subprocess.Popen(['python3', script])
-#                        script_processes.append(script_process)
+                    cli_process = subprocess.Popen(task.command + task.build_args(rep, time, task_name, zk_address, name))
                     cli_process.wait()
-                    if(cli_process.returncode == 0):
+                    if cli_process.returncode == 0:
                         break
                 except Exception as e:
                     print(Fore.RED + "Couldn't start benchmark")
                     print(e)
                 finally:
-#                    for script_process in script_processes:
-#                            script_process.kill()
                     sleep(10)
-                    print(Fore.GREEN + "Retrying")       
-
-#def get_python_scripts():
-#    """Gets a list of Python scripts in the current working directory."""
-#    return [file for file in os.listdir('.') if file.endswith('.py')]
+                    print(Fore.GREEN + "Retrying")
 
 
 def kill_handler(*args):
     print("\nCleaning up")
     sys.exit(1)
 
+
 signal.signal(signal.SIGINT, kill_handler)
 signal.signal(signal.SIGTERM, kill_handler)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python3 main.py <experiment_directory> <experiment_directory> ...")
+    if len(sys.argv) < 4:
+        print("Usage: python3 main.py <experiment_directory> [<experiment_directory> ...] -zk <zk_address>")
         kill_handler()
 
     working_directory = os.getcwd()
-    directories = sys.argv[1:]
-    print(directories)
+    zk_index = sys.argv.index('-zk')
+    directories = sys.argv[1:zk_index]
+    zk_address = sys.argv[zk_index + 1]
+
     for directory in directories:
         os.chdir(directory)
         folder_name = os.path.basename(directory)
         timeout = 60
         while True:
             try:
-                run_benchmark(folder_name)
+                run_benchmark(folder_name, zk_address)
                 break
             except Exception as e:
                 print(Fore.CYAN + f"Retrying in {timeout / 60} min")
                 sleep(timeout)
                 timeout += 60
-
 
         os.chdir(working_directory)
