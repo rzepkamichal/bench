@@ -1,19 +1,17 @@
 import argparse
-import atexit
-import builtins
 import datetime
 import os
 import signal
 import subprocess
 import sys
 from time import sleep
-import time
 from typing import Dict, List
+from tqdm import tqdm
 
 from pydantic import BaseModel
 import yaml
 
-from colorama import Fore, Style, init
+from colorama import Fore, init
 
 init(autoreset=True)  # Ensure automatic color reset
 
@@ -149,6 +147,48 @@ signal.signal(signal.SIGINT, kill_handler)
 signal.signal(signal.SIGTERM, kill_handler)
 
 
+def retry_run_benchmark():
+    timeout = 60
+    for _ in range(0, 5):
+        try:
+            experiment_folder_name = os.path.basename(os.getcwd())
+            run_benchmark(folder_name=experiment_folder_name, zk=zk)
+            break
+        except Exception as e:
+            print(Fore.CYAN + f"Retrying in {timeout / 60} min")
+            sleep(timeout)
+            timeout += 60
+
+
+def batch_traverse_and_cd(base_dir: str):
+    abs_original_dir = os.path.abspath(os.getcwd())
+    try:
+        if not os.path.exists(base_dir):
+            print(f"Error: folder for experiment batch {base_dir} dos not exist")
+            sys.exit(1)
+        os.chdir(base_dir)
+        abs_base_dir = os.path.abspath(os.getcwd())
+        subdirs = [subdir for subdir in os.listdir(abs_base_dir) if os.path.isdir(os.path.join(abs_base_dir, subdir))]
+        for subdir in tqdm(subdirs,desc="Processing directories", unit="dir"):
+            subdir_path = os.path.join(abs_base_dir, subdir)
+            os.chdir(subdir_path)
+            retry_run_benchmark()
+            os.chdir(abs_base_dir)
+                
+    finally:
+        os.chdir(abs_original_dir)
+
+def list_travers_and_cd(dir_list: List[str]):
+    working_directory = os.getcwd()
+    for experiment_dir in tqdm(dir_list,desc="Processing directories", unit="dir"):
+        if not os.path.exists(experiment_dir):
+            print(f"Error: folder {experiment_dir} does not exist")
+            continue
+        os.chdir(experiment_dir)
+        retry_run_benchmark()
+        os.chdir(working_directory)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run benchmark script.")
 
@@ -165,52 +205,10 @@ if __name__ == "__main__":
 
     working_directory = os.getcwd()
 
-    batch_dir  = args.directories[0]
-
-
     if args.d is True:
-
-        if not os.path.exists(batch_dir):
-            print(f"Error: folder for experiment batch {batch_dir} dos not exist")
-            kill_handler()
-
-        os.chdir(batch_dir)
-        experiment_folders = os.listdir()
-
-
-        for experiment_folder in experiment_folders:
-            os.chdir(experiment_folder)
-            experiment_folder_name = os.path.basename(experiment_folder)
-
-            print(experiment_folder_name)
-            timeout = 1
-
-            while True:
-                try:
-                    run_benchmark(folder_name=experiment_folder_name, zk=zk)
-                    break
-                except Exception as e:
-                    print(Fore.CYAN + f"Retrying in {timeout / 60} min")
-                    sleep(timeout)
-                    timeout += 60
-            os.chdir(working_directory)
+        batch_dir  = args.directories[0]
+        batch_traverse_and_cd(batch_dir)
 
     if args.d is False:
-        for experiment_dir in args.directories:
-            if not os.path.exists(experiment_dir):
-                print(f"Error: folder {experiment_dir} dos not exist")
-                kill_handler()
-            os.chdir(experiment_dir)
-            folder_name = os.path.basename(experiment_dir)
-            timeout = 60
-
-            while True:
-                try:
-                    run_benchmark(folder_name=folder_name, zk=zk)
-                    break
-                except Exception as e:
-                    print(Fore.CYAN + f"Retrying in {timeout / 60} min")
-                    sleep(timeout)
-                    timeout += 60
-
-            os.chdir(working_directory)
+        list_dir = args.directories
+        list_travers_and_cd(list_dir)

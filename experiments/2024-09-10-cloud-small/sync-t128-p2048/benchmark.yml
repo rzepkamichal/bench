@@ -1,4 +1,4 @@
-4config:
+config:
   name: "sync-t128-p2048"
   repetitions: 1
   client:
