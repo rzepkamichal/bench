@@ -64,10 +64,11 @@ class Task(BaseModel):
         args.append(str(self.task_id))
         args.append("-o")
         args.append(new_output_name)
+        args.append("-lc")
+        args.append(str(self.latency_correction))
         args.append("-zk")
         args.append(zk)
-        args.append("-lc")
-        args.append(self.latency_correction)
+    
         return args
 
 

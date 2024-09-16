@@ -1,0 +1,21 @@
+config:
+  name: "test task"
+  repetitions: 1
+  client:
+    count: 1
+
+tasks:
+  warmup:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 1000
+    mode: sync
+    num_threads: 1
+    runtime: PT15S
+    task_id: 0
+    payload_size: 128
+
+
+
