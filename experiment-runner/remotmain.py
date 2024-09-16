@@ -40,6 +40,7 @@ class Task(BaseModel):
     runtime: str
     payload_size: int
     task_id: int
+    latency_correction: bool = True
 
     def build_args(self,time:datetime,zk:str,name:str) -> List[str]:
 
@@ -65,6 +66,8 @@ class Task(BaseModel):
         args.append(new_output_name)
         args.append("-zk")
         args.append(zk)
+        args.append("-lc")
+        args.append(self.latency_correction)
         return args
 
 
