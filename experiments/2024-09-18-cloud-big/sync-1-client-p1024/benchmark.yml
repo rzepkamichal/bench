@@ -1,0 +1,33 @@
+config:
+  name: "sync-1-client-p1024"
+  repetitions: 1
+  client:
+    count: 1
+
+tasks:
+  warmup:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 1000
+    mode: sync
+    num_threads: 1
+    runtime: PT30S
+    task_id: 0
+    payload_size: 1024
+    latency_correction: false
+
+  t1:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 5000 # does not matter with 1 client (closed system), latency corr. off
+    mode: sync
+    num_threads: 1
+    runtime: PT8M
+    task_id: 1
+    payload_size: 1024
+    latency_correction: false
+
