@@ -109,67 +109,67 @@ tasks:
     payload_size: 2048
     latency_correction: true
 
-    t8:
-      command:
-        - java
-        - -jar
-        - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
-      throughput: 55000
-      mode: sync
-      num_threads: 300
-      runtime: PT2M
-      task_id: 8
-      payload_size: 2048
-      latency_correction: true
+  t8:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 55000
+    mode: sync
+    num_threads: 300
+    runtime: PT2M
+    task_id: 8
+    payload_size: 2048
+    latency_correction: true
 
-    t9:
-      command:
-        - java
-        - -jar
-        - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
-      throughput: 60000
-      mode: sync
-      num_threads: 320
-      runtime: PT2M
-      task_id: 9
-      payload_size: 2048
-      latency_correction: true
+  t9:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 60000
+    mode: sync
+    num_threads: 320
+    runtime: PT2M
+    task_id: 9
+    payload_size: 2048
+    latency_correction: true
 
-    t10:
-      command:
-        - java
-        - -jar
-        - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
-      throughput: 65000
-      mode: sync
-      num_threads: 350
-      runtime: PT2M
-      task_id: 10
-      payload_size: 2048
-      latency_correction: true
+  t10:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 65000
+    mode: sync
+    num_threads: 350
+    runtime: PT2M
+    task_id: 10
+    payload_size: 2048
+    latency_correction: true
 
-    t11:
-      command:
-        - java
-        - -jar
-        - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
-      throughput: 80000
-      mode: sync
-      num_threads: 440
-      runtime: PT2M
-      task_id: 11
-      payload_size: 2048
-      latency_correction: true
+  t11:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 80000
+    mode: sync
+    num_threads: 440
+    runtime: PT2M
+    task_id: 11
+    payload_size: 2048
+    latency_correction: true
 
-    t12:
-      command:
-        - java
-        - -jar
-        - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
-      throughput: 100000
-      mode: sync
-      num_threads: 550
-      runtime: PT2M
-      task_id: 12
-      payload_size: 2048
-      latency_correction: true
+  t12:
+    command:
+      - java
+      - -jar
+      - /opt/bench-main/bookkeeper-workload-generator-1.0.jar
+    throughput: 100000
+    mode: sync
+    num_threads: 550
+    runtime: PT2M
+    task_id: 12
+    payload_size: 2048
+    latency_correction: true
